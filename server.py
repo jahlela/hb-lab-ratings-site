@@ -97,7 +97,13 @@ def user_login():
         flash("Password does not match. Please try again.")
         return redirect("/")
 
-
+@app.route('/logout', methods=['POST'])
+def logout():
+    # remove the username from the session if it's there
+    session['username'] = None
+    session['user_id'] = None
+    flash("Successfully logged out!")
+    return redirect("/")
 
 
 if __name__ == "__main__":
