@@ -3,17 +3,21 @@
 
 <h1>Ratings</h1>
 
-<form action="/login" method="POST">
-    <p>Username (email)  <input type="text" name="username" value="username"></p>
-    <p>Password  <input type="text" name="password"  value="password"></p>
-    <input type="submit" value="Log in">
-</form>
+<!-- Check session for boolean 'logged_in' -->
+<!-- If not logged in, display login form -->
+{% if not session["logged_in"] %}
+    <form action="/login" method="POST">
+        <p>Username (email)  <input type="text" name="username" value="username"></p>
+        <p>Password  <input type="password" name="password"  value="password"></p>
+        <input type="submit" value="Log in">
+    </form>
 
-
-<form action="/logout" method="POST">
-    <input type="submit" value="Log out">
-</form>
-
+<!-- If user is logged in, display logout button -->
+{% else %}    
+    <form action="/logout" method="POST">
+        <input type="submit" value="Log out">
+    </form>
+{% endif %}
 
 
 <h2>Movies</h2>

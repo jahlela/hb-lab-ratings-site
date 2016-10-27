@@ -1,9 +1,18 @@
 body {
-  background-image: url("http://3dprint.com/wp-content/uploads/2015/07/bubble4.png");
+  margin: 30px;
+  /*background-image: url("http://3dprint.com/wp-content/uploads/2015/07/bubble4.png");*/
+  background-color: teal;
   font-family: 'Lato', sans-serif;
   color: white;
 }
 
 a {
   color: papayawhip;
+}
+
+input[type='submit'] {
+  background-color: papayawhip;
+  border: none;
+  color: black;
+  margin: 5px;
 }

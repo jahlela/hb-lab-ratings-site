@@ -22,11 +22,18 @@ app.secret_key = "ABC"
 app.jinja_env.undefined = StrictUndefined
 
 
+@app.before_request
+def before_request():
+    """ Default session["logged_in"] to false if next endpoint is not /login"""
+
+    if "logged_in" not in session and request.endpoint != 'login':
+        session["logged_in"] = False
+
+
 @app.route('/')
 def index():
     """Homepage."""
-    #a = jsonify([1,3])
-    #return a
+
     return render_template("homepage.html")
 
 @app.route("/users")
@@ -34,8 +41,17 @@ def user_list():
     """Show list of users."""
 
     users = User.query.all()
-    return render_template("user_list.html", users=users)
+    return render_template("user_list.html", 
+                            users=users)
 
+
+@app.route("/movies")
+def movie_list():
+    """Show list of movies."""
+
+    movies = Movie.query.order_by(Movie.title).all()
+    return render_template("movie_list.html", 
+                            movies=movies)
 
 
 @app.route("/register", methods=["GET"])
@@ -76,11 +92,9 @@ def user_login():
     if "user_id" not in session:
         session["user_id"] = {}
 
-    print "##############################################################"
-
     current_user = User.query.filter_by(email=username).first()
 
-    
+    # check login credentials against database, and route user accordingly
     if not current_user:
         # redirect to /register
         flash("No record found. Please register!")
@@ -89,6 +103,7 @@ def user_login():
     elif current_user and current_user.password == password:
         # store username in Flask session
         session["user_id"] = current_user.user_id
+        session["logged_in"] = True
         flash("Successfully logged in!")
         return redirect("/")
 
@@ -100,10 +115,64 @@ def user_login():
 @app.route('/logout', methods=['POST'])
 def logout():
     # remove the username from the session if it's there
-    session['username'] = None
     session['user_id'] = None
+    session['logged_in'] = False
+
+    # if 'username'
+
     flash("Successfully logged out!")
     return redirect("/")
+
+@app.route('/users/<user_id>', methods=["GET"])
+def user_details(user_id):
+
+    # get user object from database with their user_id
+    user = User.query.get(user_id)
+
+    return render_template('/user_details.html',
+                            user=user)
+
+
+@app.route('/movies/<movie_id>', methods=["GET"])
+def movie_details(movie_id):
+
+    # get movie object from database with its movie_id
+    movie = Movie.query.get(movie_id)
+    print movie
+    return render_template('/movie_details.html',
+                            movie=movie)
+
+
+
+
+
+@app.route('/add_rating', methods=["POST"])
+def add_rating():
+
+    #new score --- get from the form using request.args.get('score')
+
+    # movie_id   
+    # user_id    from session key --> email, get user object and ask for id attr
+
+    # if new_score:
+    #     new_rating = Rating(user_id=user_id, movie_id=movie_id, score=new_score)
+    #     new_rating.score = new_score
+    #     db.session.commit()
+    # else:
+
+
+
+
+
+    rating_query = Rating.query.filter(Rating.user_id == user_id, 
+                                       Rating.movie_id == movie_id)
+
+
+
+
+
+
+
 
 
 if __name__ == "__main__":
