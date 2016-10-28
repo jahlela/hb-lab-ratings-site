@@ -7,8 +7,8 @@
 <!-- If not logged in, display login form -->
 {% if not session["logged_in"] %}
     <form action="/login" method="POST">
-        <p>Username (email)  <input type="text" name="username" value="username"></p>
-        <p>Password  <input type="password" name="password"  value="password"></p>
+        <p>Username (email)  <input type="text" name="username" placeholder="username"></p>
+        <p>Password  <input type="password" name="password"  placeholder="password"></p>
         <input type="submit" value="Log in">
     </form>
 

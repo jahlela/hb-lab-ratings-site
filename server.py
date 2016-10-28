@@ -112,8 +112,10 @@ def user_login():
         flash("Password does not match. Please try again.")
         return redirect("/")
 
+
 @app.route('/logout', methods=['POST'])
 def logout():
+    """User logout."""
     # remove the username from the session if it's there
     session['user_id'] = None
     session['logged_in'] = False
@@ -125,6 +127,7 @@ def logout():
 
 @app.route('/users/<user_id>', methods=["GET"])
 def user_details(user_id):
+    """User details."""
 
     # get user object from database with their user_id
     user = User.query.get(user_id)
@@ -133,14 +136,38 @@ def user_details(user_id):
                             user=user)
 
 
-@app.route('/movies/<movie_id>', methods=["GET"])
+
+
+
+@app.route('/movies/<int:movie_id>', methods=["GET"])
 def movie_details(movie_id):
+    """Generate movie details. If user is logged in, user can rate the movie."""
+
 
     # get movie object from database with its movie_id
     movie = Movie.query.get(movie_id)
-    print movie
+
+    user_id = session.get("user_id")
+    rating_query = Rating.query.filter(Rating.user_id == user_id, 
+                                       Rating.movie_id == movie_id)
+    all_ratings = rating_query.all()
+
+
+
+    # check to see if the user is logged in, get user_id from session
+    if session.get("user_id") and len(all_ratings) > 0 :
+        
+        user_id = session.get("user_id")
+        user_score = rating_query.all()[-1].score
+
+    else:
+        user_score = None
+
+    
     return render_template('/movie_details.html',
-                            movie=movie)
+                            movie=movie, 
+                            user_score=user_score)
+
 
 
 
@@ -148,28 +175,32 @@ def movie_details(movie_id):
 
 @app.route('/add_rating', methods=["POST"])
 def add_rating():
+    """If logged in, a user can rate a movie or update an old rating."""
+    
+    new_score = request.form['new_score']
+    user_id = request.form['user_id']
+    movie_id = request.form['movie_id']
 
-    #new score --- get from the form using request.args.get('score')
+    # Check to see if user has rated movie before
+    rating_query = Rating.query.filter(Rating.user_id == user_id, Rating.movie_id == movie_id)
 
-    # movie_id   
-    # user_id    from session key --> email, get user object and ask for id attr
+    all_ratings = rating_query.all()
 
-    # if new_score:
-    #     new_rating = Rating(user_id=user_id, movie_id=movie_id, score=new_score)
-    #     new_rating.score = new_score
-    #     db.session.commit()
-    # else:
+    # If rated before, update score in database
+    if len(all_ratings) > 0 :
+        rating_query.all()[-1].score = new_score
+        db.session.commit()
 
+    # If rating for the first time, add new rating to the database
+    else:
+        new_rating = Rating(user_id=user_id, movie_id=movie_id, score=new_score)
+        new_rating.score = new_score
+        db.session.commit()
 
+    # update rating if already logged_in on movie_details page
+    # create form 
 
-
-
-    rating_query = Rating.query.filter(Rating.user_id == user_id, 
-                                       Rating.movie_id == movie_id)
-
-
-
-
+    return redirect('/movies/' + str(movie_id))
 
 
 
@@ -188,4 +219,4 @@ if __name__ == "__main__":
 
 
     
-    app.run(port=5003)
+    app.run(port=5000)

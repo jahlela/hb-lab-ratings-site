@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block content %}
+
+  <h2>Movie Details</h2>
+
+
+  {% if 'user_id' in session %}
+    <!-- Add a new rating with dropdown -->
+
+    
+
+      {% if user_score %}
+        <!-- If they have already rated this movie, print previous rating and render
+             submit button as 'Update Rating' -->
+         <p>You previously rated this movie: {{ user_score }}</p>
+         <p>You may update your rating using the following form: 
+
+      {% endif %}
+
+
+      <!-- Render 'Submit Rating' button with route -->
+
+        <form action='/add_rating' method='POST'>
+          <select name="new_score">
+            <option value="1">1 (worst)</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5 (best)</option>
+          </select>
+
+          <input type="hidden" name="user_id" value="{{ session['user_id'] }}">
+          <input type="hidden" name="movie_id" value='{{ movie.movie_id }}'>
+          <input type="submit" value = "Submit!">
+
+        </form>
+
+  {% else %}
+      <!-- Prompt user to log in or register in order to rate the movie -->
+      <p>If you would like to rate this movie, please log in or sign up: </p>
+      <input type="submit" action="/register" value = "Take me there!">
+
+
+    
+
+
+  {% endif %}
+
+  <ul>
+    <li> Title: {{ movie.title }}</li>
+    <li> Year: {{ movie.released_at }}</li>
+    <li> Ratings
+      <ul>
+        {% for rating in movie.ratings %}
+        <li>{{ rating.score }}  </li>
+        {% endfor %}
+      </ul>
+    </li>
+
+
+{% endblock %}
