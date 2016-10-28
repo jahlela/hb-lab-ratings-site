@@ -30,6 +30,9 @@ def before_request():
         session["logged_in"] = False
 
 
+
+################## Render Templates
+
 @app.route('/')
 def index():
     """Homepage."""
@@ -61,6 +64,35 @@ def register_form():
     return render_template("register_form.html") 
 
 
+@app.route('/logout', methods=['POST'])
+def logout():
+    """User logout."""
+    # remove the username from the session if it's there
+    session['user_id'] = None
+    session['logged_in'] = False
+
+    flash("Successfully logged out!")
+    return redirect("/")
+
+@app.route('/users/<user_id>', methods=["GET"])
+def user_details(user_id):
+    """User details."""
+
+    # get user object from database with their user_id
+    user = User.query.get(user_id)
+
+    return render_template('/user_details.html',
+                            user=user)
+
+
+
+
+
+
+
+
+
+
 
 @app.route("/register", methods=["POST"])
 def register_new_user():
@@ -81,6 +113,8 @@ def register_new_user():
 
     # redirect to homepage
     return redirect("/")
+
+
 
 @app.route("/login", methods=['POST'])
 def user_login():
@@ -113,27 +147,12 @@ def user_login():
         return redirect("/")
 
 
-@app.route('/logout', methods=['POST'])
-def logout():
-    """User logout."""
-    # remove the username from the session if it's there
-    session['user_id'] = None
-    session['logged_in'] = False
 
-    # if 'username'
 
-    flash("Successfully logged out!")
-    return redirect("/")
 
-@app.route('/users/<user_id>', methods=["GET"])
-def user_details(user_id):
-    """User details."""
 
-    # get user object from database with their user_id
-    user = User.query.get(user_id)
 
-    return render_template('/user_details.html',
-                            user=user)
+
 
 
 
@@ -147,18 +166,20 @@ def movie_details(movie_id):
     # get movie object from database with its movie_id
     movie = Movie.query.get(movie_id)
 
+    print "###########################################"
     user_id = session.get("user_id")
     rating_query = Rating.query.filter(Rating.user_id == user_id, 
                                        Rating.movie_id == movie_id)
     all_ratings = rating_query.all()
+    print all_ratings
 
 
 
     # check to see if the user is logged in, get user_id from session
-    if session.get("user_id") and len(all_ratings) > 0 :
+    if user_id and len(all_ratings) > 0 :
         
-        user_id = session.get("user_id")
         user_score = rating_query.all()[-1].score
+        print user_score
 
     else:
         user_score = None
@@ -167,10 +188,6 @@ def movie_details(movie_id):
     return render_template('/movie_details.html',
                             movie=movie, 
                             user_score=user_score)
-
-
-
-
 
 
 @app.route('/add_rating', methods=["POST"])
@@ -194,7 +211,7 @@ def add_rating():
     # If rating for the first time, add new rating to the database
     else:
         new_rating = Rating(user_id=user_id, movie_id=movie_id, score=new_score)
-        new_rating.score = new_score
+        db.session.add(new_rating)
         db.session.commit()
 
     # update rating if already logged_in on movie_details page
