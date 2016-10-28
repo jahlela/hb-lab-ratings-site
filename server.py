@@ -86,11 +86,31 @@ def user_details(user_id):
 
 
 
+@app.route('/movies/<int:movie_id>', methods=["GET"])
+def movie_details(movie_id):
+    """Generate movie details. If user is logged in, user can rate the movie."""
 
+    # get movie object from database with its movie_id
+    movie = Movie.query.get(movie_id)
 
+    user_id = session.get("user_id")
+    rating_query = Rating.query.filter(Rating.user_id == user_id, 
+                                       Rating.movie_id == movie_id)
+    all_ratings = rating_query.all()
 
+    # check to see if the user is logged in, get user_id from session
+    if user_id and len(all_ratings) > 0 :
+        
+        user_score = rating_query.all()[-1].score
+        print user_score
 
+    else:
+        user_score = None
 
+    
+    return render_template('/movie_details.html',
+                            movie=movie, 
+                            user_score=user_score)
 
 
 
@@ -148,48 +168,6 @@ def user_login():
 
 
 
-
-
-
-
-
-
-
-
-
-
-@app.route('/movies/<int:movie_id>', methods=["GET"])
-def movie_details(movie_id):
-    """Generate movie details. If user is logged in, user can rate the movie."""
-
-
-    # get movie object from database with its movie_id
-    movie = Movie.query.get(movie_id)
-
-    print "###########################################"
-    user_id = session.get("user_id")
-    rating_query = Rating.query.filter(Rating.user_id == user_id, 
-                                       Rating.movie_id == movie_id)
-    all_ratings = rating_query.all()
-    print all_ratings
-
-
-
-    # check to see if the user is logged in, get user_id from session
-    if user_id and len(all_ratings) > 0 :
-        
-        user_score = rating_query.all()[-1].score
-        print user_score
-
-    else:
-        user_score = None
-
-    
-    return render_template('/movie_details.html',
-                            movie=movie, 
-                            user_score=user_score)
-
-
 @app.route('/add_rating', methods=["POST"])
 def add_rating():
     """If logged in, a user can rate a movie or update an old rating."""
@@ -226,7 +204,7 @@ def add_rating():
 if __name__ == "__main__":
     # We have to set debug=True here, since it has to be True at the
     # point that we invoke the DebugToolbarExtension
-    app.debug = True
+    app.debug = False
     app.jinja_env.auto_reload = app.debug
 
     connect_to_db(app)

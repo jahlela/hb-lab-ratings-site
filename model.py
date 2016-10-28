@@ -2,6 +2,8 @@
 
 from flask_sqlalchemy import SQLAlchemy
 
+import correlation 
+
 # This is the connection to the PostgreSQL database; we're getting this through
 # the Flask-SQLAlchemy helper library. On this, we can find the `session`
 # object, where we do most of our interactions (like committing, etc.)
@@ -67,6 +69,27 @@ class Rating(db.Model):
         s = "<Rating rating_id=%s movie_id=%s user_id=%s score=%s>"
         return s % (self.rating_id, self.movie_id, self.user_id,
                     self.score)
+##############################################################################
+# Predictions Logic
+ 
+# def predict_rating(user, movie):
+#     """Predict a user's rating of a movie."""
+
+#     other_ratings = movie.ratings
+#     other_users = [ r.user for r in other_ratings ]
+
+#     similarities = [
+#         (user.similarity(other_user), other_user)
+#         for other_user in other_users
+#     ]
+
+#     similarities.sort(reverse=True)
+#     sim, best_match_user = similarities[0]
+
+#     for rating in other_ratings:
+#         if rating.user_id == best_match_user.user_id
+#            return rating.score * sim
+
 ##############################################################################
 # Helper functions
 
